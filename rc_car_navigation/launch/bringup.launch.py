@@ -28,7 +28,7 @@ def generate_launch_description():
             os.path.join(zed_wrapper_dir, 'launch', 'zed_camera.launch.py')
         ),
         launch_arguments={
-            'camera_model': 'zedm',
+            'camera_model': 'zed2i',
             'node_log_type': 'log',
         }.items()
     )

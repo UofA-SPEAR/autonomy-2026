@@ -50,7 +50,7 @@ class RCCarCanDrive(Node):
 
     def send_commands(self):
         # Send drive command
-        drive_msg = self.create_drive_command(self.DRIVE_MOTOR_ID, self.velocity)
+        drive_msg = self.create_drive_command(self.DRIVE_MOTOR_ID, self.velocity*0.4)
         self.bus.send(drive_msg)
         
         # Send steering command
