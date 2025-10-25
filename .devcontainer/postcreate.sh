@@ -1,6 +1,6 @@
-# !/bin/sh
+#!/bin/sh
 # set git to checkout as-is, commit LF line endings
-git config core.autocrlf input
+git config --global core.autocrlf input
 
 # Original post-create below
 #sudo rosdep update && sudo rosdep install --from-paths src --ignore-src -y && sudo chown -R $(whoami) /home/ws/

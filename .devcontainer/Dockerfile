@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:22.04
 ARG USERNAME=USERNAME
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
@@ -16,6 +16,17 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && apt-get install -y sudo \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
+
+
+
+# set the timezone
+ENV DEBIAN_FRONTEND=noninteractive
+RUN ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
+    apt-get update && \
+    apt-get install -y tzdata && \
+    dpkg-reconfigure -f noninteractive tzdata
+
+
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y python3-pip
 ENV SHELL=/bin/bash
@@ -33,7 +44,7 @@ RUN apt-get update && apt-get install ros-dev-tools -y
 
 RUN apt-get update && apt-get upgrade -y
 
-RUN apt-get install ros-kilted-desktop -y
+RUN apt-get install ros-humble-desktop -y
 
 RUN apt-get install python3-colcon-common-extensions -y
 
@@ -49,10 +60,10 @@ RUN apt-get install -y \
     mesa-utils
 
 # Gazebo Sim
-RUN sudo apt-get install ros-kilted-ros-gz -y
+RUN sudo apt-get install ros-humble-ros-gz -y
 
 # add sources to bashrc
-RUN echo "source /opt/ros/kilted/setup.bash" >> /home/$USERNAME/.bashrc
+RUN echo "source /opt/ros/humble/setup.bash" >> /home/$USERNAME/.bashrc
 RUN echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> /home/$USERNAME/.bashrc
 RUN echo "source /workspace/install/setup.bash || true" >> /home/$USERNAME/.bashrc
 # ^ || true here in case the setup.bash hasn't been created yet
