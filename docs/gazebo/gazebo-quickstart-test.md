@@ -1,0 +1,11 @@
+After initializing environment:
+- Open 3 terminals
+    - In the first terminal, run: `ros2 run ros_gz_bridge parameter_bridge /keyboard/keypress@std_msgs/msg/Int32@ignition.msgs.Int32`
+        - This bridges the `/keyboard/keypress` topic between ROS2 and Gazebo, using the Int32 message type.
+    - In the second terminal, run `ros2 topic echo /keyboard/keypress`
+        - This displays the ROS2 topic `/keyboard/keypress` messages in the terminal.
+        - When the bridge works, the gazebo messages should appear here.
+    - In the third terminal, run: `ign gazebo empty.sdf`
+        - This launches Gazebo with an empty world.
+        - You need to add the 'Key Publisher' by clicking on the three dots in the top right, then searching for 'Key Publisher' and adding it to the world.
+        - Then, press any key while the Gazebo window is focused and watch the messages appear in the ROS2 topic echo terminal.
