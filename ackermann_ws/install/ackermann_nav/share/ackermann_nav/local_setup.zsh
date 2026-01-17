@@ -1,0 +1,1 @@
+/workspace/spear/ackermann_ws/build/ackermann_nav/ament_cmake_environment_hooks/local_setup.zsh
