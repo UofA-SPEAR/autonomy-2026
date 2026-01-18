@@ -1,9 +1,0 @@
-/workspace/spear/ackermann_ws/build/ackermann_nav/CMakeFiles/uninstall.dir
-/workspace/spear/ackermann_ws/build/ackermann_nav/CMakeFiles/ackermann_nav_uninstall.dir
-/workspace/spear/ackermann_ws/build/ackermann_nav/CMakeFiles/test.dir
-/workspace/spear/ackermann_ws/build/ackermann_nav/CMakeFiles/edit_cache.dir
-/workspace/spear/ackermann_ws/build/ackermann_nav/CMakeFiles/rebuild_cache.dir
-/workspace/spear/ackermann_ws/build/ackermann_nav/CMakeFiles/list_install_components.dir
-/workspace/spear/ackermann_ws/build/ackermann_nav/CMakeFiles/install.dir
-/workspace/spear/ackermann_ws/build/ackermann_nav/CMakeFiles/install/local.dir
-/workspace/spear/ackermann_ws/build/ackermann_nav/CMakeFiles/install/strip.dir

@@ -1,1 +1,0 @@
-rclcpp;std_msgs;sensor_msgs;geometry_msgs;nav_msgs;tf2;tf2_ros;urdf;rclpy;gazebo_ros;gazebo_ros_pkgs;gazebo_ros2_control;nav2_bringup;nav2_common;robot_state_publisher;joint_state_publisher;robot_localization;pointcloud_to_laserscan;xacro;ros2launch

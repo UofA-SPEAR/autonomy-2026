@@ -1,1 +1,0 @@
-/workspace/spear/ackermann_ws/build/ackermann_nav/ament_cmake_core/ackermann_navConfig.cmake
