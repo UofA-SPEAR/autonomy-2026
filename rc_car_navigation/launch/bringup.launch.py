@@ -28,6 +28,7 @@ def generate_launch_description():
         ),
         launch_arguments={
             'camera_model': 'zedm',
+            'node_log_type': 'log',
         }.items()
     )
     
