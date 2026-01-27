@@ -83,7 +83,6 @@ def generate_launch_description():
     )
     
     return launch.LaunchDescription([
-        SetEnvironmentVariable(name='RCUTILS_COLORIZED_OUTPUT', value='1'),
         zed_camera_launch,
         robot_state_publisher,
         static_tf_odom_to_base,
