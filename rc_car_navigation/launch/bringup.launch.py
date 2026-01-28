@@ -16,6 +16,7 @@ def generate_launch_description():
     # File paths
     urdf_file = os.path.join(pkg_share, 'urdf', 'rc_car.urdf')
     nav2_params_file = os.path.join(pkg_share, 'config', 'nav2_params.yaml')
+    ekf_params_file = os.path.join(pkg_share, 'config', 'ekf_params.yaml')
     
     # Read URDF file
     with open(urdf_file, 'r') as infp:
@@ -44,23 +45,34 @@ def generate_launch_description():
             'use_sim_time': False
         }]
     )
-    
-    # Static transform: odom to base_link
-    # This connects base_link to the same odom frame that ZED uses
-    # Adjust xyz to represent where your robot's base_link is relative to the ZED camera
-    static_tf_odom_to_base = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='odom_to_base_link',
+
+
+    # EKF Node - fuses ZED odom + IMU
+    ekf_node = Node(
+        package='robot_localization',
+        executable='ekf_node',
+        name='ekf_filter_node',
         output='screen',
-        emulate_tty=True,
-        arguments=[
-            '0', '0', '0',           # x y z (adjust based on initial position)
-            '0', '0', '0',           # roll pitch yaw
-            'odom',                  # parent frame
-            'base_link'              # child frame (your robot)
-        ]
+        parameters=[ekf_params_file],
+        remappings=[('odometry/filtered', '/odometry/filtered')]
     )
+    
+    # # Static transform: odom to base_link
+    # # This connects base_link to the same odom frame that ZED uses
+    # # Adjust xyz to represent where your robot's base_link is relative to the ZED camera
+    # static_tf_odom_to_base = Node(
+    #     package='tf2_ros',
+    #     executable='static_transform_publisher',
+    #     name='odom_to_base_link',
+    #     output='screen',
+    #     emulate_tty=True,
+    #     arguments=[
+    #         '0', '0', '0',           # x y z (adjust based on initial position)
+    #         '0', '0', '0',           # roll pitch yaw
+    #         'odom',                  # parent frame
+    #         'base_link'              # child frame (your robot)
+    #     ]
+    # )
     
     # CMD_VEL to CAN converter node
     cmd_vel_to_can = Node(
@@ -86,7 +98,8 @@ def generate_launch_description():
     return launch.LaunchDescription([
         zed_camera_launch,
         robot_state_publisher,
-        static_tf_odom_to_base,
+        # static_tf_odom_to_base,
+        ekf_node,
         cmd_vel_to_can,
         nav2_launch,
     ])
