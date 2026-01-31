@@ -1,0 +1,424 @@
+# ===========================
+# ODOM-ONLY NAV2 (ACKERMANN RC)
+# Clean + modular + sane defaults
+# ===========================
+
+common:
+  use_sim_time: &use_sim_time false
+  global_frame: &global_frame odom
+  base_frame: &base_frame base_link
+  odom_topic: &odom_topic /odometry/filtered
+  turning_radius: &turning_r 0.40          # <-- set to your RC car min turning radius (m)
+  robot_radius: &robot_r 0.20              # <-- set correctly (m)
+  costmap_res: &res 0.05
+
+# ===========================
+# BT Navigator
+# ===========================
+bt_navigator:
+  ros__parameters:
+    use_sim_time: *use_sim_time
+    global_frame: *global_frame
+    robot_base_frame: *base_frame
+    odom_topic: *odom_topic
+    default_bt_xml_filename: "navigate_w_replanning_and_recovery.xml"
+    bt_loop_duration: 10
+    default_server_timeout: 20
+
+    # Keep your full list if you need it; leaving as-is is fine.
+    plugin_lib_names:
+    - nav2_compute_path_to_pose_action_bt_node
+    - nav2_compute_path_through_poses_action_bt_node
+    - nav2_smooth_path_action_bt_node
+    - nav2_follow_path_action_bt_node
+    - nav2_back_up_action_bt_node
+    - nav2_spin_action_bt_node
+    - nav2_wait_action_bt_node
+    - nav2_drive_on_heading_bt_node
+    - nav2_assisted_teleop_action_bt_node
+    - nav2_clear_costmap_service_bt_node
+    - nav2_is_stuck_condition_bt_node
+    - nav2_goal_reached_condition_bt_node
+    - nav2_goal_updated_condition_bt_node
+    - nav2_globally_updated_goal_condition_bt_node
+    - nav2_is_path_valid_condition_bt_node
+    - nav2_initial_pose_received_condition_bt_node
+    - nav2_reinitialize_global_localization_service_bt_node
+    - nav2_rate_controller_bt_node
+    - nav2_distance_controller_bt_node
+    - nav2_speed_controller_bt_node
+    - nav2_truncate_path_action_bt_node
+    - nav2_truncate_path_local_action_bt_node
+    - nav2_goal_updater_node_bt_node
+    - nav2_recovery_node_bt_node
+    - nav2_pipeline_sequence_bt_node
+    - nav2_round_robin_node_bt_node
+    - nav2_transform_available_condition_bt_node
+    - nav2_time_expired_condition_bt_node
+    - nav2_path_expiring_timer_condition
+    - nav2_distance_traveled_condition_bt_node
+    - nav2_single_trigger_bt_node
+    - nav2_goal_updated_controller_bt_node
+    - nav2_is_battery_low_condition_bt_node
+    - nav2_navigate_through_poses_action_bt_node
+    - nav2_navigate_to_pose_action_bt_node
+    - nav2_remove_passed_goals_action_bt_node
+    - nav2_planner_selector_bt_node
+    - nav2_controller_selector_bt_node
+    - nav2_goal_checker_selector_bt_node
+    - nav2_smoother_selector_bt_node
+
+# ===========================
+# Costmaps (ODOM rolling window)
+# ===========================
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      use_sim_time: *use_sim_time
+      update_frequency: 10.0
+      publish_frequency: 5.0
+      global_frame: *global_frame
+      robot_base_frame: *base_frame
+      rolling_window: true
+      width: 10.0
+      height: 10.0
+      resolution: *res
+      robot_radius: *robot_r
+      plugins: ["voxel_layer", "inflation_layer"]
+      always_send_full_costmap: true
+
+      voxel_layer:
+        plugin: "nav2_costmap_2d::VoxelLayer"
+        enabled: true
+        publish_voxel_map: false
+        origin_z: 0.0
+        z_resolution: 0.05
+        z_voxels: 16
+        max_obstacle_height: 2.0
+        mark_threshold: 0
+        observation_sources: pointcloud
+        pointcloud:
+          topic: /zed/zed_node/point_cloud/cloud_registered
+          max_obstacle_height: 2.0
+          min_obstacle_height: 0.0
+          obstacle_max_range: 5.0
+          obstacle_min_range: 0.0
+          raytrace_max_range: 6.0
+          raytrace_min_range: 0.0
+          clearing: true
+          marking: true
+          data_type: "PointCloud2"
+
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        inflation_radius: 0.60          # <-- IMPORTANT: was fine in local, keep it
+        cost_scaling_factor: 3.0
+
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      use_sim_time: *use_sim_time
+      update_frequency: 2.0
+      publish_frequency: 2.0
+      global_frame: *global_frame
+      robot_base_frame: *base_frame
+      rolling_window: true
+      width: 50.0
+      height: 50.0
+      resolution: *res
+      robot_radius: *robot_r
+      plugins: ["voxel_layer", "inflation_layer"]
+      always_send_full_costmap: true
+
+      voxel_layer:
+        plugin: "nav2_costmap_2d::VoxelLayer"
+        enabled: true
+        publish_voxel_map: false
+        origin_z: 0.0
+        z_resolution: 0.05
+        z_voxels: 16
+        max_obstacle_height: 4.0
+        mark_threshold: 0
+        observation_sources: pointcloud
+        pointcloud:
+          topic: /zed/zed_node/point_cloud/cloud_registered
+          max_obstacle_height: 4.0
+          min_obstacle_height: 0.1
+          obstacle_max_range: 10.0
+          obstacle_min_range: 0.0
+          raytrace_max_range: 12.0
+          raytrace_min_range: 0.0
+          clearing: true
+          marking: true
+          data_type: "PointCloud2"
+
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        inflation_radius: 0.60          # <-- FIX: was 0.015 (too small)
+        cost_scaling_factor: 2.5
+
+# ===========================
+# Planner (SMAC Hybrid-A*)
+# ===========================
+planner_server:
+  ros__parameters:
+    use_sim_time: *use_sim_time
+    planner_plugins: ["GridBased"]
+
+    GridBased:
+      # Use "::" or "/" depending on your Nav2 version.
+      # If your current one loads, keep it. Otherwise swap to the other style.
+      plugin: "nav2_smac_planner::SmacPlannerHybrid"
+
+      downsample_costmap: false
+      downsampling_factor: 1
+      tolerance: 0.25
+      allow_unknown: true
+
+      max_iterations: 1000000          # FIX: don't use 1e9 unless debugging
+      max_on_approach_iterations: 1000
+      max_planning_time: 2.0
+
+      motion_model_for_search: "DUBIN" # forward-only (RC car friendly)
+      angle_quantization_bins: 72
+
+      minimum_turning_radius: *turning_r
+
+      # Penalties (IMPORTANT)
+      reverse_penalty: 5.0             # FIX: must be >= 1 (yours was 0.01)
+      change_penalty: 0.0
+      non_straight_penalty: 1.2
+      cost_penalty: 2.0
+      retrospective_penalty: 0.015
+
+      analytic_expansion_ratio: 3.5
+      analytic_expansion_max_length: 3.0
+      analytic_expansion_max_cost: 200.0
+      analytic_expansion_max_cost_override: false
+
+      lookup_table_size: 20.0
+      cache_obstacle_heuristic: false
+      debug_visualizations: false
+
+      use_quadratic_cost_penalty: false
+      downsample_obstacle_heuristic: true
+      allow_primitive_interpolation: false
+      goal_heading_mode: "DEFAULT"
+      smooth_path: true
+
+# ===========================
+# Controller (MPPI Ackermann)
+# ===========================
+controller_server:
+  ros__parameters:
+    use_sim_time: *use_sim_time
+    controller_frequency: 30.0
+
+    # Raise these a bit so the server doesn't treat tiny floats as meaningful
+    min_x_velocity_threshold: 0.01
+    min_theta_velocity_threshold: 0.01
+
+    failure_tolerance: 0.3
+    progress_checker_plugin: "progress_checker"
+    goal_checker_plugins: ["general_goal_checker"]
+    controller_plugins: ["FollowPath"]
+
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.20
+      movement_time_allowance: 5.0
+
+    general_goal_checker:
+      stateful: true
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.25
+      yaw_goal_tolerance: 0.35
+
+    FollowPath:
+      plugin: "nav2_mppi_controller::MPPIController"
+
+      motion_model: "Ackermann"
+      AckermannConstraints:
+        min_turning_r: *turning_r
+
+      # Horizon
+      time_steps: 56
+      model_dt: 0.05                 # horizon = 2.8s
+
+      # Sampling
+      batch_size: 2000
+      iteration_count: 2             # FIX: more robust than 1 (still reasonable CPU)
+
+      # Limits (set these to your platform)
+      vx_max: 0.25
+      vx_min: -0.10                  # reduce reverse tendency
+      vy_max: 0.0
+      wz_max: 1.9
+
+      ax_max: 3.0
+      ax_min: -3.0
+      ay_max: 0.0
+
+      # Noise (exploration)
+      vx_std: 0.25                   # FIX: bigger than 0.1 helps escape "stop"
+      vy_std: 0.0
+      wz_std: 0.55
+
+      temperature: 0.3
+      gamma: 0.02
+
+      transform_tolerance: 0.1
+      visualize: false
+      regenerate_noises: false
+
+      TrajectoryValidator:
+        plugin: "mppi::DefaultOptimalTrajectoryValidator"
+        collision_lookahead_time: 2.0
+        consider_footprint: true     # FIX: safer + more consistent for car
+
+      critics: [
+        "ConstraintCritic",
+        "CostCritic",
+        "GoalCritic",
+        "GoalAngleCritic",
+        "PathAlignCritic",
+        "PathFollowCritic",
+        "PathAngleCritic",
+        "PreferForwardCritic",
+        "VelocityDeadbandCritic",
+        "TwirlingCritic"
+      ]
+
+      # --- Key fix for "tiny vx stuck" ---
+      VelocityDeadbandCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 60.0
+        deadband_velocities: [0.08, 0.0, 0.10]  # <-- IMPORTANT: set vx to min speed that actually moves your car
+
+      TwirlingCritic:
+        enabled: true
+        twirling_cost_power: 1
+        twirling_cost_weight: 6.0
+
+      ConstraintCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 4.0
+
+      CostCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 4.0
+        critical_cost: 300.0
+        consider_footprint: true     # FIX: was false
+        collision_cost: 1000000.0
+        near_goal_distance: 1.0
+        trajectory_point_step: 2
+
+      GoalCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
+        threshold_to_consider: 1.4
+
+      GoalAngleCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 3.0
+        threshold_to_consider: 0.5
+
+      PreferForwardCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 6.0
+        threshold_to_consider: 0.5
+
+      # FIX: was too strong for circles
+      PathAlignCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0            # FIX: down from 14
+        max_path_occupancy_ratio: 0.05
+        trajectory_point_step: 4
+        threshold_to_consider: 0.5
+        offset_from_furthest: 10    # FIX: down from 20
+        use_path_orientations: false
+
+      PathFollowCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
+        offset_from_furthest: 5
+        threshold_to_consider: 1.4
+
+      PathAngleCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 2.0
+        offset_from_furthest: 4
+        threshold_to_consider: 0.5
+        max_angle_to_furthest: 1.0
+        mode: 0
+
+# ===========================
+# Smoother Server
+# ===========================
+smoother_server:
+  ros__parameters:
+    use_sim_time: *use_sim_time
+    smoother_plugins: ["simple_smoother"]
+    simple_smoother:
+      plugin: "nav2_smoother::SimpleSmoother"
+      tolerance: 1.0e-10
+      max_its: 300
+      do_refinement: true
+
+# ===========================
+# Behavior Server
+# ===========================
+behavior_server:
+  ros__parameters:
+    use_sim_time: *use_sim_time
+    costmap_topic: local_costmap/costmap_raw
+    footprint_topic: local_costmap/published_footprint
+    cycle_frequency: 10.0
+    behavior_plugins: ["spin", "backup", "wait"]
+    spin:
+      plugin: "nav2_behaviors/Spin"
+    backup:
+      plugin: "nav2_behaviors/BackUp"
+    wait:
+      plugin: "nav2_behaviors/Wait"
+    global_frame: *global_frame
+    robot_base_frame: *base_frame
+    transform_tolerance: 0.1
+    simulate_ahead_time: 2.0
+    max_rotational_vel: 1.0
+    min_rotational_vel: 0.4
+    rotational_acc_lim: 3.2
+
+# ===========================
+# Waypoint follower
+# ===========================
+waypoint_follower:
+  ros__parameters:
+    use_sim_time: *use_sim_time
+    loop_rate: 20
+    stop_on_failure: false
+    waypoint_task_executor_plugin: "wait_at_waypoint"
+    wait_at_waypoint:
+      plugin: "nav2_waypoint_follower::WaitAtWaypoint"
+      enabled: true
+      waypoint_pause_duration: 0.2
+
+# ===========================
+# Velocity smoother (IMPORTANT: add deadband)
+# ===========================
+velocity_smoother:
+  ros__parameters:
+    use_sim_time: *use_sim_time
+    smoothing_frequency: 20.0
+    scale_velocities: false
+    feedback: "
+
