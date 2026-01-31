@@ -1,25 +1,23 @@
-# Overview  
+# **Overview - Config**
 explaination on parameters in [nav2_params.yaml](build/rc_car_navigation/config/nav2_params.yaml)  
 Note: variables will be **bolded** and func will be *italicize* for convence of reference  
-# Config  
-
-### Core Servers *using all*  
+# Core Servers *using all*  
 behaviour tree
 
-### Planners Plugin:  
-[smac Hybrid-A* planner](https://docs.nav2.org/configuration/packages/smac/configuring-smac-hybrid.html)  
+# Planners Plugin:  
+[Smac Hybrid-A* Planner](https://docs.nav2.org/configuration/packages/smac/configuring-smac-hybrid.html)  
 
-### Controller Plugin:  
-[MPP](https://docs.nav2.org/configuration/packages/configuring-mppic.html)  
+# Controller Plugin:  
+[MPPI Controller](https://docs.nav2.org/configuration/packages/configuring-mppic.html)  
 
-#### Main idea:  
+## Main idea:  
 - sim thousands of possible trajectories into future
 - pick on that best follows the path while avoiding obstacles
 - accounts for physics of rover ie. cannot turn in place without some momentum
 
 Note: we are trying to minimize the cost of choosing a best path out of a bunch of more costly paths, by pred the future (simulating with algo)
 
-#### Core Algorithm
+## Core Algorithm
 1. Generate N random trajectories (N = **batch_size**)
 2. Simulate each trajectory T seconds into the future (T = **time_steps** × **model_dt**)
 3. Score each trajectory (lower cost = better)
@@ -29,7 +27,7 @@ Note: we are trying to minimize the cost of choosing a best path out of a bunch 
 
 Only the FIRST tiny step (Δt) is executed. Then MPPI re-plans with updated rover position.
 
-#### Cost minimization  
+## Cost minimization  
 Total Cost = path_distance² + 1/obstacle_distance + goal_distance² + acceleration² + jerk²  
 ex.  
 Trajectory A: Total cost = 12.5 (bad)  
@@ -38,7 +36,7 @@ Trajectory C: Total cost = 7.8  (okay)
 
 MPPI picks B (minimum cost)
 
-#### DEBUGGING with RViz  
+## DEBUGGING with RViz  
 helpful to mess around with *TrajectoryVisualizer*  
 ex. change in path pts, when time_step changes  
 
@@ -46,7 +44,7 @@ time_step = 1:  Rover → ●●●●●●●●●●●●●●● → Futu
 time_step = 3:  Rover → ●   ●   ●   ●   ● → Future  (every 3rd)  
 time_step = 10: Rover → ●       ●       ● → Future  (every 10th)  
 
-#### Critics  
+## Critics  
 *ConstraintCritic*: Filter out impossible trajectories  
 Rejects trajectories that:  
 - Exceed velocity limits (v > v_max)
@@ -108,5 +106,5 @@ Example:
   v = 1.0 m/s → cost = 0 (good)  
   v = -0.3 m/s → cost = penalty (discouraged)  
 
-### Smoother Plugin:  
-[savitzky-golay](https://docs.nav2.org/configuration/packages/configuring-savitzky-golay-smoother.html)
+# Smoother Plugin:  
+[Savitzky-Golay Smoother](https://docs.nav2.org/configuration/packages/configuring-savitzky-golay-smoother.html)
