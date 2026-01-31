@@ -50,11 +50,11 @@ class RCCarCanDrive(Node):
 
     def send_commands(self):
         # Send drive command
-        drive_msg = self.create_drive_command(self.DRIVE_MOTOR_ID, self.velocity*0.4)
+        drive_msg = self.create_drive_command(self.DRIVE_MOTOR_ID, self.velocity)
         self.bus.send(drive_msg)
         
         # Send steering command
-        steering_msg = self.create_steering_command(self.STEERING_MOTOR_ID, self.steering_angle)
+        steering_msg = self.create_steering_command(self.STEERING_MOTOR_ID, self.steering_angle * -1.0)
         self.bus.send(steering_msg)
 
     def create_drive_command(self, actuator_id, velocity):
@@ -65,6 +65,8 @@ class RCCarCanDrive(Node):
         sender_node_id = 1
         arbitration_id = priority << 24 | command_id << 16 | receiver_node_id << 8 | sender_node_id
         
+        #if velocity > 0.25: velocity = 0.25
+        #if velocity < -0.25: velocity = -0.25
         # Pack velocity data as float32
         data = struct.pack(">f", velocity)
         
@@ -80,6 +82,8 @@ class RCCarCanDrive(Node):
         sender_node_id = 1
         arbitration_id = priority << 24 | command_id << 16 | receiver_node_id << 8 | sender_node_id
         
+        if (self.velocity < 0): angle *= -1
+
         # Pack angle data as float32
         # The -50 multiplier is from the rover code - adjust if needed for your hardware
         data = struct.pack(">f", angle * 10)
