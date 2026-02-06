@@ -33,7 +33,7 @@ class RCCarCanDrive(Node):
         self.steering_angle = 0.0  # radians
         
         # Limits
-        self.max_velocity = 2.0  # m/s - adjust for your RC car
+        self.max_velocity = 0.3  # m/s - adjust for your RC car
         self.max_steering_angle = 0.6  # radians (~34 degrees) - adjust for your RC car
 
     def cmd_vel_callback(self, msg):
@@ -65,9 +65,14 @@ class RCCarCanDrive(Node):
         sender_node_id = 1
         arbitration_id = priority << 24 | command_id << 16 | receiver_node_id << 8 | sender_node_id
         
-        #if velocity > 0.25: velocity = 0.25
-        #if velocity < -0.25: velocity = -0.25
-        # Pack velocity data as float32
+        # Convert m/s to RPM
+        wheel_diameter = 0.10  # 10cm wheels - ADJUST FOR YOUR CAR
+        wheel_circumference = 3.14159 * wheel_diameter
+        
+        rpm = (abs(velocity) * .05) / wheel_circumference
+        if velocity < 0:
+            rpm = -rpm
+        
         data = struct.pack(">f", velocity)
         
         # Create and return CAN message
@@ -82,8 +87,7 @@ class RCCarCanDrive(Node):
         sender_node_id = 1
         arbitration_id = priority << 24 | command_id << 16 | receiver_node_id << 8 | sender_node_id
         
-        if (self.velocity < 0): angle *= -1
-
+        
         # Pack angle data as float32
         # The -50 multiplier is from the rover code - adjust if needed for your hardware
         data = struct.pack(">f", angle * 10)
