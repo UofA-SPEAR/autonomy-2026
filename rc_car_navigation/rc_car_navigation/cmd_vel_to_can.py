@@ -33,13 +33,19 @@ class RCCarCanDrive(Node):
         self.steering_angle = 0.0  # radians
         
         # Limits
-        self.max_velocity = 0.3  # m/s - adjust for your RC car
+        self.max_velocity = 0.25  # m/s - adjust for your RC car
+        self.min_velocity = 0.2
         self.max_steering_angle = 0.6  # radians (~34 degrees) - adjust for your RC car
 
     def cmd_vel_callback(self, msg):
         # Store velocity command
         self.velocity = max(-self.max_velocity, min(self.max_velocity, msg.linear.x))
-        
+        if abs(self.velocity) > 0.03 and abs(self.velocity) < self.min_velocity:
+            if self.velocity < 0:
+                self.velocity = self.min_velocity * -1
+            else:
+                self.velocity = self.min_velocity
+
         # Convert angular velocity to steering angle
         # For an RC car, angular velocity relates to steering angle
         # This is a simple proportional relationship - adjust the factor as needed
