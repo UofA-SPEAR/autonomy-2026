@@ -24,6 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'cloud_merger = zed_fusion.cloud_merger:main',
         ],
     },
 )
