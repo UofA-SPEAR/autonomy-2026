@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 """
-camera_config.py
-
 Hardware info and mounting positions for all ZED cameras
 on the ackermann platform. Add new cameras here only.
+
+Version 1.0
+
 """
-
-# ── Standard library ────────────────────────────
 import numpy as np
-
-# ── Third party ─────────────────────────────────
 import pyzed.sl as sl
 
 from zed_fusion.camera_information import CAM_SERIAL_NO
@@ -23,10 +20,10 @@ class STREAM:
 
 # ── Camera hardware ──────────────────────────────
 class CameraInfo:
-    def __init__(self, name, model, resolution, fps):
+    def __init__(self, name, resolution=sl.RESOLUTION.HD2K, fps=15):
         self.name       = name
-        self.model      = model
-        self.serial     = CAM_SERIAL_NO[name]
+        self.model      = CAM_SERIAL_NO[name]["model"]
+        self.serial     = CAM_SERIAL_NO[name]["SN"]
         self.resolution = resolution
         self.fps        = fps
 
@@ -37,8 +34,8 @@ class CameraInfo:
 
 
 CAMERAS = [
-    CameraInfo("zed_front", "zed2i", sl.RESOLUTION.HD2K, 15),
-    CameraInfo("zed_back",  "zedm", sl.RESOLUTION.HD2K, 15),
+    CameraInfo("zed_front"),
+    CameraInfo("zed_back"),
 ]
 
 
@@ -51,6 +48,19 @@ class Pose:
         self.roll  = roll
         self.pitch = pitch
         self.yaw   = yaw
+
+    def set_reference_pt(position):
+        pass
+
+    def set_cam_pos(self, tx=0.0, ty=0.0, tz=0.0):
+        self.tx = tx
+        self.ty = ty
+        self.tz = tz
+
+    def set_cam_ang(self, roll=0.0, pitch=0.0, yaw=0.0):
+        self.roll = roll
+        self.pitch = pitch
+        self.yaw = yaw
 
 
 class POSES:
